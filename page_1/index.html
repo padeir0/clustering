@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Means Clustering (1)</title>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+  <div id="controls">
+    <label for="sizeSlider">Tamanho:</label>
+    <input type="range" id="sizeSlider" min="10" max="100" value="30">
+    <label for="brushSlider">Pontos por clique:</label>
+    <input type="range" id="brushSlider" min="1" max="10" value="1">
+    <label for="spreadSlider">Spread:</label>
+    <input type="range" id="spreadSlider" min="10" max="100" value="40">
+    <label for="speedSlider">Velocidade de animação:</label>
+    <input type="range" id="speedSlider" min="1" max="5" value="2">
+
+    <button id="clearBtn">Limpar</button>
+    <button id="runBtn">Start</button>
+    <button id="paintBtn">Centroides</button>
+
+    <div id="nav-buttons">
+      <a href="../page_0/index.html"><button>Anterior</button></a>
+      <a href="../index.html"><button>Home</button></a>
+      <a href="#"><button disabled>Next</button></a>
+    </div>
+  </div>
+
+  <div id="canvas-container" style="flex: 1;">
+    <!-- p5.js will inject the canvas here -->
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="sketch.js"></script>
+</body>
+</html>
