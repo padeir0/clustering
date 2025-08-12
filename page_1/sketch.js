@@ -320,31 +320,34 @@ function inBounds(x, y) {
 }
 
 function clickHandler(mouseX, mouseY) {
-  if (inBounds(mouseX, mouseY)) {
-    let pos = createVector(mouseX, mouseY)
-    if (isCentroid) {
-      // sempre queremos apenas um centroide.
-      centroids.push(new Centroid(pos));
+  let pos = createVector(mouseX, mouseY)
+  if (isCentroid) {
+    // sempre queremos apenas um centroide.
+    centroids.push(new Centroid(pos));
+  } else {
+    if (pointsPerClick == 1) {
+      // queremos ser precisos nesse caso
+      points.push(new DataPoint(pos));
     } else {
-      if (pointsPerClick == 1) {
-        // queremos ser precisos nesse caso
-        points.push(new DataPoint(pos));
-      } else {
-        for (let i = 0; i < pointsPerClick; i++) {
-          let r = createVector(random(-brushSpread, brushSpread), random(-brushSpread, brushSpread));
-          let newPos = p5.Vector.add(pos, r);
-          points.push(new DataPoint(newPos));
-        }
+      for (let i = 0; i < pointsPerClick; i++) {
+        let r = createVector(random(-brushSpread, brushSpread), random(-brushSpread, brushSpread));
+        let newPos = p5.Vector.add(pos, r);
+        points.push(new DataPoint(newPos));
       }
     }
   }
 }
 
 function mousePressed() {
-  clickHandler(mouseX, mouseY);
+  if (inBounds(mouseX, mouseY)) {
+    clickHandler(mouseX, mouseY);
+  }
 }
 
 function touchStarted() {
-  clickHandler(mouseX, mouseY);
-  return false;
+  if (inBounds(mouseX, mouseY)) {
+    clickHandler(mouseX, mouseY);
+    return false;
+  }
+  return true;
 }

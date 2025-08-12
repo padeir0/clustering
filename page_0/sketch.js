@@ -134,6 +134,7 @@ function mousePressed() {
 function touchStarted() {
   if (inBounds(mouseX, mouseY)) {
     points.push(new DataPoint(createVector(mouseX, mouseY)));
+    return false;
   }
-  return false;
+  return true;
 }
