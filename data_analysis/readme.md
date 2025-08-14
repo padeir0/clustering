@@ -11,6 +11,7 @@ Uso os datasets disponíveis gratuitamente pelo UCI:
  - `wine.data`: https://archive.ics.uci.edu/dataset/109/wine
 
 Ambos os datasets estão licenciados com Creative Commons Attribution 4.0 International (CC BY 4.0).
+Todos os datasets tem apenas 3 classificações distintas.
 
 ## Como rodar o código
 
