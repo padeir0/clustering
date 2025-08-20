@@ -10,19 +10,6 @@ from matplotlib.ticker import MaxNLocator
 min_cluster = 2
 max_cluster = 21
 
-def optimal_silhueta(data):
-    sil_scores = []
-
-    k_range = range(min_cluster, max_cluster)
-    for k in k_range:
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init='auto')
-        labels = kmeans.fit_predict(data)
-        score = silhouette_score(data, labels)
-        sil_scores.append(score)
-        print(f"k={k}, Silhouette={score:.4f}")
-
-    return k_range[sil_scores.index(max(sil_scores))]
-
 def calculate_inertias(data):
     inertias = []
     for n in range(min_cluster, max_cluster):
@@ -73,6 +60,40 @@ def generate_elbow_graph(inertias, n, output="grafico.png"):
     plt.savefig(output, dpi=300, bbox_inches='tight')
     plt.close()
 
+def generate_elbow_graph_2(inertias, distances, n, output="grafico.png"):
+    clusters_range = range(2, 2 + len(inertias))
+
+    fig, ax1 = plt.subplots(figsize=(6, 3))
+
+    # Eixo Y da esquerda (Inércia)
+    color = 'tab:blue'
+    ax1.set_xlabel('Número de clusters')
+    ax1.set_ylabel('Inércia', color=color)
+    ax1.plot(clusters_range, inertias, marker='o', color=color, label='Inércia')
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.axvline(x=n, color='green', linestyle=':', linewidth=1.5)
+    ax1.scatter(n, inertias[n - 2], color='red', s=80, zorder=5)
+
+    # Eixo Y da direita (Distâncias)
+    ax2 = ax1.twinx()
+    color = 'tab:orange'
+    ax2.set_ylabel('Distância perpendicular (método do cotovelo)', color=color)
+    ax2.plot(clusters_range, distances, marker='s', color=color, label='Distância')
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.scatter(n, distances[n - 2], color='red', s=80, zorder=5)
+
+    # Título e grade
+    fig.tight_layout()
+    ax1.grid(True)
+
+    # Legendas combinadas
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='best')
+
+    plt.savefig(output, dpi=300, bbox_inches='tight')
+    plt.close()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Procura o número ótimo de clusters para uma imagem.")
     parser.add_argument("filename", type=str, help="Caminho da imagem .png")
@@ -83,6 +104,5 @@ if __name__ == "__main__":
     distances, n = optimal_number_of_clusters(inertias)
     print(f"optimal number of clusters (elbow): {n}")
 
-    generate_elbow_graph(inertias, n, args.output)
-    # n = optimal_silhueta(data)
-    # print(f"optimal number of clusters (silhouette): {n}")
+    generate_elbow_graph(inertias, 13, args.output)
+    # generate_elbow_graph_2(inertias, distances, n, args.output)
