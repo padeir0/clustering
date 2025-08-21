@@ -7,7 +7,7 @@ let fps = 5;
 let period = 1;
 let isRunning = false;
 let notDrawn = true;
-let runBtn, colorSlider, speedSlider;
+let runBtn, colorSlider, speedSlider, colorValue ;
 
 function fitImageToCanvas(img) {
   let imgAspect = img.width / img.height;
@@ -30,14 +30,33 @@ function fitImageToCanvas(img) {
 }
 
 function runBtnHandler() {
-    if (isRunning) {
-      runBtn.html('Start');
-      runBtn.style('background-color', '#007BFF');
-    } else {
+  if (isRunning) {
+    out = undefined;
+    data = []
+    runBtn.html('Start');
+    runBtn.style('background-color', '#007BFF');
+  } else {
+    if (img) {
+      start();
       runBtn.html('Stop');
       runBtn.style('background-color', '#F57B7B');
     }
-    isRunning = !isRunning;
+  }
+  isRunning = !isRunning;
+}
+
+function start() {
+  fitImageToCanvas(img);
+  loadPixels();
+  for (let i = 0; i < pixels.length; i += 4) {
+    data.push([pixels[i], pixels[i+1], pixels[i+2]]);
+  }
+  out = {
+    centroids: initCentroids(data, numColors),
+    data: data.map(x => null),
+    loop: true,
+  };
+  notDrawn = false;
 }
 
 function setup() {
@@ -50,12 +69,14 @@ function setup() {
   runBtn = select('#runBtn');
   speedSlider = select('#speedSlider');
   colorSlider = select('#colorSlider');
+  colorValue = select('#colorValue');
 
   speedSlider.input(() => {
     period = max(1, floor(fps / speedSlider.value()));
   });
   colorSlider.input(() => {
     numColors = colorSlider.value();
+    colorValue.html(numColors);
   });
   runBtn.mousePressed(runBtnHandler);
   document.getElementById("upload").addEventListener("change", e => {
@@ -64,6 +85,7 @@ function setup() {
       background(220);
       img = loadImage(URL.createObjectURL(file));
       notDrawn = true;
+      runBtn.removeAttribute('disabled');
     }
   });
 }
@@ -138,7 +160,7 @@ function reduceColors(outdata, data, centroids) {
   let loop = false;
   for (let i = 0; i < centroids.length; i++) {
     let d = pixelDistance(centroids[i], res.centroids[i]);
-    if (d > 0.1) {
+    if (d > 1) {
       loop = true;
       break;
     }
@@ -154,19 +176,6 @@ function reduceColors(outdata, data, centroids) {
 let frames = 0;
 
 function draw() {
-  if (img && notDrawn) {
-    fitImageToCanvas(img);
-    loadPixels();
-    for (let i = 0; i < pixels.length; i += 4) {
-      data.push([pixels[i], pixels[i+1], pixels[i+2]]);
-    }
-    out = {
-      centroids: initCentroids(data, numColors),
-      data: data.map(x => null),
-      loop: true,
-    };
-    notDrawn = false;
-  }
   if (out && out.loop && isRunning) {
     out = reduceColors(out.data, data, out.centroids);
 
@@ -179,8 +188,6 @@ function draw() {
   }
 
   if (out != undefined && out.loop == false) {
-    out = undefined;
-    data = []
     runBtnHandler();
   }
 
