@@ -1,8 +1,7 @@
 let img;
 let p5Canvas;
 let numColors = 2;
-let out;
-let data = [];
+let context;
 let fps = 5;
 let period = 1;
 let isRunning = false;
@@ -31,8 +30,7 @@ function fitImageToCanvas(img) {
 
 function runBtnHandler() {
   if (isRunning) {
-    out = undefined;
-    data = []
+    context = undefined;
     runBtn.html('Start');
     runBtn.style('background-color', '#007BFF');
   } else {
@@ -48,13 +46,15 @@ function runBtnHandler() {
 function start() {
   fitImageToCanvas(img);
   loadPixels();
+  let data = [];
   for (let i = 0; i < pixels.length; i += 4) {
     data.push([pixels[i], pixels[i+1], pixels[i+2]]);
   }
-  out = {
+  context = {
     centroids: initCentroids(data, numColors),
-    data: data.map(x => null),
+    data: data,
     loop: true,
+    labels: data.map(x => 0),
   };
   notDrawn = false;
 }
@@ -90,6 +90,14 @@ function setup() {
   });
 }
 
+
+function pixelDistanceSq(a, b) {
+  let x = b[0] - a[0];
+  let y = b[1] - a[1];
+  let z = b[2] - a[2];
+  return x*x + y*y + z*z;
+}
+
 function pixelDistance(a, b) {
   let x = b[0] - a[0];
   let y = b[1] - a[1];
@@ -109,30 +117,35 @@ function initCentroids(data, numCentroids) {
   return out;
 }
 
-function updateCentroids(data, centroids) {
+const MAXDIST = 3*255*255 + 1;
+
+function updateCentroids() {
   function mapper(x) {
     return {"sum": [0,0,0], "totalElements": 0};
   }
-  let centroidAvg = centroids.map(mapper);
-  let labels = data.map(x => 0);
+  let centroidAvg = context.centroids.map(mapper);
 
-  for (let i = 0; i < data.length; i++) {
+  const dataLen = context.data.length
+  const cenLen = context.centroids.length
+  for (let i = 0; i < dataLen; i++) {
     let closest = null;
-    let minDistance = null;
-    let point = data[i];
-    for (let j = 0; j < centroids.length; j++) {
-      let centroid = centroids[j];
-      let distance = pixelDistance(point, centroid);
+    let minDistanceSq = MAXDIST;
+    let point = context.data[i];
+    for (let j = 0; j < cenLen; j++) {
+      let centroid = context.centroids[j];
+      let distanceSq = pixelDistanceSq(point, centroid);
 
-      if (minDistance == null || distance < minDistance) {
+      if (distanceSq < minDistanceSq) {
         closest = j;
-        minDistance = distance;
+        minDistanceSq = distanceSq;
       }
     }
-    labels[i] = closest;
-    centroidAvg[closest].sum[0] += data[i][0];
-    centroidAvg[closest].sum[1] += data[i][1];
-    centroidAvg[closest].sum[2] += data[i][2];
+    context.labels[i] = closest;
+    let sum = centroidAvg[closest].sum
+    let item = context.data[i];
+    sum[0] += item[0];
+    sum[1] += item[1];
+    sum[2] += item[2];
     centroidAvg[closest].totalElements += 1;
   }
 
@@ -148,46 +161,41 @@ function updateCentroids(data, centroids) {
     newCentroids.push(centroid);
   }
 
-  return {"labels": labels, "centroids": newCentroids};
+  return newCentroids;
 }
 
-function reduceColors(outdata, data, centroids) {
-  let res = updateCentroids(data, centroids);
-  for (let i = 0; i < res.labels.length; i++) {
-    outdata[i] = res.centroids[res.labels[i]];
+function reduceColors() {
+  let newCentroids = updateCentroids();
+  for (let i = 0; i < context.labels.length; i++) {
+    let color = context.centroids[context.labels[i]];
+    pixels[i*4]     = color[0];
+    pixels[i*4 + 1] = color[1];
+    pixels[i*4 + 2] = color[2];
   }
 
   let loop = false;
-  for (let i = 0; i < centroids.length; i++) {
-    let d = pixelDistance(centroids[i], res.centroids[i]);
+  for (let i = 0; i < newCentroids.length; i++) {
+    let d = pixelDistance(context.centroids[i], newCentroids[i]);
     if (d > 1) {
       loop = true;
       break;
     }
   }
-  
-  return {
-    "data": outdata,
-    "centroids": res.centroids,
-    "loop": loop,
-  };
+
+  context.centroids = newCentroids;
+  context.loop = loop;
+  return;
 }
 
 let frames = 0;
 
 function draw() {
-  if (out && out.loop && isRunning) {
-    out = reduceColors(out.data, data, out.centroids);
-
-    for (let i = 0; i < out.data.length; i++) {
-      pixels[i*4]     = out.data[i][0];
-      pixels[i*4 + 1] = out.data[i][1];
-      pixels[i*4 + 2] = out.data[i][2];
-    }
+  if (context && context.loop && isRunning) {
+    reduceColors();
     updatePixels();
   }
 
-  if (out != undefined && out.loop == false) {
+  if (context != undefined && context.loop == false) {
     runBtnHandler();
   }
 
