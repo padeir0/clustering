@@ -6,7 +6,7 @@ let fps = 5;
 let period = 1;
 let isRunning = false;
 let notDrawn = true;
-let runBtn, colorSlider, speedSlider, colorValue;
+let runBtn, colorSlider, speedSlider, colorValue, fsBtn, showBtn;
 
 function fitImageToCanvas(img) {
   let imgAspect = img.width / img.height;
@@ -29,18 +29,26 @@ function fitImageToCanvas(img) {
 }
 
 function runBtnHandler() {
+  const htmlPlay = "<svg class=\"icon\"><use href=\"../icons.svg#icon-play\"/></svg>";
+  const htmlStop = "<svg class=\"icon\"><use href=\"../icons.svg#icon-pause\"/></svg>";
   if (isRunning) {
     context = undefined;
-    runBtn.html('Start');
+    runBtn.html(htmlPlay);
     runBtn.style('background-color', '#007BFF');
   } else {
     if (img) {
       start();
-      runBtn.html('Stop');
+      runBtn.html(htmlStop);
       runBtn.style('background-color', '#F57B7B');
     }
   }
   isRunning = !isRunning;
+}
+
+function showBtnHandler() {
+  fitImageToCanvas(img);
+  loadPixels();
+  updatePixels();
 }
 
 function start() {
@@ -60,7 +68,7 @@ function start() {
 }
 
 function setup() {
-  p5Canvas = createCanvas(windowWidth * 0.75, windowHeight);
+  p5Canvas = createCanvas(windowWidth * 0.8, windowHeight);
   p5Canvas.parent("canvas-container");
   background(220);
   frameRate(fps);
@@ -70,6 +78,8 @@ function setup() {
   speedSlider = select('#speedSlider');
   colorSlider = select('#colorSlider');
   colorValue = select('#colorValue');
+  fsBtn = select('#fsBtn');
+  showBtn = select('#showBtn');
 
   speedSlider.input(() => {
     period = max(1, floor(fps / speedSlider.value()));
@@ -78,7 +88,9 @@ function setup() {
     numColors = colorSlider.value();
     colorValue.html(numColors);
   });
+  fsBtn.mousePressed(() => {document.querySelector("body").requestFullscreen();})
   runBtn.mousePressed(runBtnHandler);
+  showBtn.mousePressed(showBtnHandler);
   document.getElementById("upload").addEventListener("change", e => {
     const file = e.target.files[0];
     if (file) {
@@ -86,6 +98,7 @@ function setup() {
       img = loadImage(URL.createObjectURL(file));
       notDrawn = true;
       runBtn.removeAttribute('disabled');
+      showBtn.removeAttribute('disabled');
     }
   });
 }
@@ -211,6 +224,6 @@ function draw() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth * 0.75, windowHeight);
+  resizeCanvas(windowWidth * 0.8, windowHeight);
   if (img) redraw();
 }

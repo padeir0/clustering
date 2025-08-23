@@ -202,7 +202,6 @@ function closeEnough(a, b) {
 function verifyTermination(clusters) {
   for (let i = 0; i < clusters.length; i++) {
     let cluster = clusters[i];
-    console.log(cluster.centroidHistory);
     if (cluster.centroidHistory.length > 1) {
       let a = cluster.centroidHistory[cluster.centroidHistory.length-1];
       let b = cluster.centroidHistory[cluster.centroidHistory.length-2];
@@ -217,15 +216,17 @@ function verifyTermination(clusters) {
 }
 
 function runBtnHandler() {
-    if (isRunning) {
-      runBtn.html('Start');
-      runBtn.style('background-color', '#007BFF');
-    } else {
-      runBtn.html('Stop');
-      runBtn.style('background-color', '#F57B7B');
-      createClusters(centroids);
-    }
-    isRunning = !isRunning;
+  const htmlPlay = "<svg class=\"icon\"><use href=\"../icons.svg#icon-play\"/></svg>";
+  const htmlStop = "<svg class=\"icon\"><use href=\"../icons.svg#icon-pause\"/></svg>";
+  if (isRunning) {
+    runBtn.html(htmlPlay);
+    runBtn.style('background-color', '#007BFF');
+  } else {
+    runBtn.html(htmlStop);
+    runBtn.style('background-color', '#F57B7B');
+    createClusters(centroids);
+  }
+  isRunning = !isRunning;
 }
 
 function paintBtnHandler() {
@@ -241,7 +242,7 @@ function paintBtnHandler() {
 
 function setup() {
   frameRate(fps);
-  let cnv = createCanvas(windowWidth * 0.75, windowHeight);
+  let cnv = createCanvas(windowWidth * 0.8, windowHeight);
   cnv.parent('canvas-container');
 
   sizeSlider = select('#sizeSlider');
@@ -309,7 +310,7 @@ function draw() {
 }
 
 function windowResized() {
-  let newWidth = windowWidth * 0.75;
+  let newWidth = windowWidth * 0.8;
   let newHeight = windowHeight;
   resizeCanvas(newWidth, newHeight);
 }

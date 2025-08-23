@@ -82,7 +82,7 @@ function medianPoint(points) {
 }
 
 function setup() {
-  let cnv = createCanvas(windowWidth * 0.75, windowHeight);
+  let cnv = createCanvas(windowWidth * 0.8, windowHeight);
   cnv.parent('canvas-container');
 
   sizeSlider = select('#sizeSlider');
@@ -114,7 +114,7 @@ function draw() {
 }
 
 function windowResized() {
-  let newWidth = windowWidth * 0.75;
+  let newWidth = windowWidth * 0.8;
   let newHeight = windowHeight;
   resizeCanvas(newWidth, newHeight);
   graph.resize(newWidth, newHeight, graphPadding);

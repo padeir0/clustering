@@ -9,16 +9,30 @@
 <body>
   <div id="controls">
     <input type="file" accept="image/*" id="upload"/>
-    <label for="speedSlider">Velocidade de animação:</label>
+    <label for="speedSlider">Vel. de animação:</label>
     <input type="range" id="speedSlider" min="1" max="5" value="2">
     <label for="colorSlider">Número de cores: <span id="colorValue">2</span></label>
     <input type="range" id="colorSlider" min="2" max="16" value="2">
-    <button id="runBtn" disabled>Start</button>
+    <button id="runBtn" disabled>
+      <svg class="icon"><use href="../icons.svg#icon-play"/></svg>
+    </button>
+    <button id="showBtn" disabled>
+      Show
+    </button>
+    <button id="fsBtn">
+      <svg class="icon"><use href="../icons.svg#icon-fullscreen"/></svg>
+    </button>
 
     <div id="nav-buttons">
-      <a href="../page_1/index.html"><button>Anterior</button></a>
-      <a href="../index.html"><button>Home</button></a>
-      <a href="#"><button disabled>Next</button></a>
+      <a href="../page_1/index.html"><button>
+        <svg class="icon"><use href="../icons.svg#icon-previous"/></svg>
+      </button></a>
+      <a href="../index.html"><button>
+        <svg class="icon"><use href="../icons.svg#icon-home"/></svg>
+      </button></a>
+      <a href="#"><button disabled>
+        <svg class="icon"><use href="../icons.svg#icon-next"/></svg>
+      </button></a>
     </div>
   </div>
 
