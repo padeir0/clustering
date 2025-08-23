@@ -6,7 +6,7 @@ let fps = 5;
 let period = 1;
 let isRunning = false;
 let notDrawn = true;
-let runBtn, colorSlider, speedSlider, colorValue ;
+let runBtn, colorSlider, speedSlider, colorValue;
 
 function fitImageToCanvas(img) {
   let imgAspect = img.width / img.height;
@@ -46,15 +46,15 @@ function runBtnHandler() {
 function start() {
   fitImageToCanvas(img);
   loadPixels();
-  let data = [];
-  for (let i = 0; i < pixels.length; i += 4) {
-    data.push([pixels[i], pixels[i+1], pixels[i+2]]);
+  let labels = []
+  for (let i = 0; i < pixels.length/4; i++) {
+    labels.push(0);
   }
   context = {
-    centroids: initCentroids(data, numColors),
-    data: data,
+    centroids: initCentroids(pixels, numColors),
+    data: new Uint8ClampedArray(pixels),
     loop: true,
-    labels: data.map(x => 0),
+    labels: labels,
   };
   notDrawn = false;
 }
@@ -91,10 +91,10 @@ function setup() {
 }
 
 
-function pixelDistanceSq(a, b) {
-  let x = b[0] - a[0];
-  let y = b[1] - a[1];
-  let z = b[2] - a[2];
+function pixelDistanceSq(r, g, b, centroid) {
+  let x = centroid[0] - r;
+  let y = centroid[1] - g;
+  let z = centroid[2] - b;
   return x*x + y*y + z*z;
 }
 
@@ -102,18 +102,23 @@ function pixelDistance(a, b) {
   let x = b[0] - a[0];
   let y = b[1] - a[1];
   let z = b[2] - a[2];
-  return Math.sqrt(x*x + y*y + z*z)
+  return Math.sqrt(x*x + y*y + z*z);
 }
 
 function randint(lower, upper) {
   return floor(random(lower, upper));
 }
 
-function initCentroids(data, numCentroids) {
+function initCentroids(pixels, numCentroids) {
   let out = [];
   for (let i = 0; i < numCentroids; i++) {
-    out.push(data[randint(0, data.length)]);
+    let k = randint(0, pixels.length/4);
+    let r = pixels[4*k];
+    let g = pixels[4*k + 1];
+    let b = pixels[4*k + 2];
+    out.push([r, g, b]);
   }
+
   return out;
 }
 
@@ -125,16 +130,20 @@ function updateCentroids() {
   }
   let centroidAvg = context.centroids.map(mapper);
 
-  const dataLen = context.data.length
+  const dataLen = context.data.length/4;
   const cenLen = context.centroids.length
   for (let i = 0; i < dataLen; i++) {
     let closest = null;
     let minDistanceSq = MAXDIST;
-    let point = context.data[i];
+    const r = context.data[4*i];
+    const g = context.data[4*i + 1];
+    const b = context.data[4*i + 2];
     for (let j = 0; j < cenLen; j++) {
-      let centroid = context.centroids[j];
-      let distanceSq = pixelDistanceSq(point, centroid);
-
+      const centroid = context.centroids[j];
+      const x = centroid[0] - r;
+      const y = centroid[1] - g;
+      const z = centroid[2] - b;
+      const distanceSq =  x*x + y*y + z*z;
       if (distanceSq < minDistanceSq) {
         closest = j;
         minDistanceSq = distanceSq;
@@ -142,17 +151,16 @@ function updateCentroids() {
     }
     context.labels[i] = closest;
     let sum = centroidAvg[closest].sum
-    let item = context.data[i];
-    sum[0] += item[0];
-    sum[1] += item[1];
-    sum[2] += item[2];
+    sum[0] += r;
+    sum[1] += g;
+    sum[2] += b;
     centroidAvg[closest].totalElements += 1;
   }
 
   let newCentroids = [];
   for (let i = 0; i < centroidAvg.length; i++) {
-    let sum = centroidAvg[i].sum;
-    let total = centroidAvg[i].totalElements;
+    const sum = centroidAvg[i].sum;
+    const total = centroidAvg[i].totalElements;
     let centroid = [
       sum[0]/total,
       sum[1]/total,
